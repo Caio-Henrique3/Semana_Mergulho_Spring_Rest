@@ -14,20 +14,25 @@ import lombok.AllArgsConstructor;
 public class ClienteService {
 
 	private ClienteRepository clienteRepository;
-
+	
+	public Cliente buscarCliente(Long clienteId) {
+		return clienteRepository.findById(clienteId)
+				.orElseThrow(() -> new NegocioExeception("Cliente não encontrado!"));
+	}
+	
 	@Transactional
 	public Cliente salvar(Cliente cliente) {
 		boolean emailUsado = clienteRepository.findByEmail(cliente.getEmail())
 				.stream()
 				.anyMatch(clienteExistente -> !clienteExistente.equals(cliente));
-
+		
 		if (emailUsado) {
 			throw new NegocioExeception("E-mail já cadastrado em outro cliente!");
 		}
-
+		
 		return clienteRepository.save(cliente);
 	}
-
+	
 	@Transactional
 	public void excluir(Long clienteId) {
 		clienteRepository.deleteById(clienteId);
