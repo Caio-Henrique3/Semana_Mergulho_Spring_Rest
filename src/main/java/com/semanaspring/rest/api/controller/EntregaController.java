@@ -14,6 +14,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.semanaspring.rest.api.DTO.EntregaDTO;
+import com.semanaspring.rest.api.input.EntregaInput;
+import com.semanaspring.rest.api.mapper.EntregaMapper;
 import com.semanaspring.rest.api.model.Entrega;
 import com.semanaspring.rest.api.repository.EntregaRepository;
 import com.semanaspring.rest.api.service.EntregaService;
@@ -27,23 +30,25 @@ public class EntregaController {
 
 	private EntregaRepository entregaRepository;
 	private EntregaService entregService;
+	private EntregaMapper entregaMapper;
 	
 	@GetMapping
-	public List<Entrega> listar() {
-		return entregaRepository.findAll();
+	public List<EntregaDTO> listar() {
+		return entregaMapper.toCollectionModel(entregaRepository.findAll());
 	}
 	
 	@GetMapping("/{entregaId}")
-	public ResponseEntity<Entrega> name(@PathVariable Long entregaId) {
+	public ResponseEntity<EntregaDTO> name(@PathVariable Long entregaId) {
 		return entregaRepository.findById(entregaId)
-				.map(ResponseEntity::ok)
+				.map(entrega -> ResponseEntity.ok(entregaMapper.toModelMapper(entrega)))
 				.orElse(ResponseEntity.notFound().build());
 	}
 	
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	public Entrega solicitaarEntrega(@Valid @RequestBody Entrega entrega) {
-		return entregService.solicitarEntrega(entrega);
+	public EntregaDTO solicitaarEntrega(@Valid @RequestBody EntregaInput entrega) {
+		Entrega novaEntrega = entregaMapper.toEntity(entrega);
+		return entregaMapper.toModelMapper(entregService.solicitarEntrega(novaEntrega));
 	}
 	
 }
